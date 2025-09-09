@@ -1502,3 +1502,19 @@ def test_not_in_installed_menu_list_(tmp_path, request, no_registry):
     assert is_in_installed_apps_menu == (no_registry == 0), (
         f"Unable to find program '{partial_name}' in the 'Installed apps' menu"
     )
+
+
+def test_frozen_environment(tmp_path, request):
+    input_path = _example_path("protected_base")
+    for installer, install_dir in create_installer(input_path, tmp_path):
+        frozen_file = install_dir / "conda-meta" / "frozen"
+        assert frozen_file.exists()
+        _run_installer(
+            input_path,
+            installer,
+            install_dir,
+            request=request,
+            check_subprocess=True,
+            uninstall=True
+        )
+        assert frozen_file.exists()
