@@ -1507,7 +1507,7 @@ def test_not_in_installed_menu_list_(tmp_path, request, no_registry):
 @pytest.mark.xfail(
     condition=(
         CONDA_EXE == StandaloneExe.CONDA
-        and check_version(CONDA_EXE_VERSION, min_version="25.5.0", max_version="25.7.0"),
+        and check_version(CONDA_EXE_VERSION, min_version="25.5.0", max_version="25.7.0")
     ),
     reason="conda-standalone 25.5.x fails with protected base environments and older versions are ignored",
     strict=True,
