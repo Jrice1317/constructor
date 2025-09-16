@@ -1421,13 +1421,14 @@ def test_regressions(tmp_path, request):
             uninstall=True,
         )
 
+
 @pytest.mark.xfail(
-    condition=(CONDA_EXE == StandaloneExe.CONDA and
-               CONDA_EXE_VERSION and
-               CONDA_EXE_VERSION >= Version("25.5.0") and
-               CONDA_EXE_VERSION < Version("25.7.0")),
+    condition=(
+        CONDA_EXE == StandaloneExe.CONDA
+        and check_version(CONDA_EXE_VERSION, min_version="25.5.0", max_version="25.7.0"),
+    ),
     reason="conda-standalone 25.5.x fails with protected base environments and older versions are ignored",
-    strict=True
+    strict=True,
 )
 def test_frozen_environment(tmp_path, request):
     input_path = _example_path("protected_base")
@@ -1439,6 +1440,6 @@ def test_frozen_environment(tmp_path, request):
             install_dir,
             request=request,
             check_subprocess=True,
-            uninstall=False
+            uninstall=False,
         )
         assert frozen_file.exists()
