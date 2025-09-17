@@ -246,7 +246,8 @@ def main_build(
                 return True
         return False
 
-    if (has_frozen_file(info.get("extra_files", []))
+    if (
+        has_frozen_file(info.get("extra_files", []))
         and exe_type == StandaloneExe.CONDA
         and exe_version
         and exe_version >= Version("25.5.0")
