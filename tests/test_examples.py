@@ -1456,5 +1456,3 @@ def test_frozen_environment(tmp_path, request):
             f"Expected: {sorted(str(p) for p in expected_frozen_paths)}\n"
             f"Found: {sorted(str(p) for p in actual_frozen_paths)}"
         )
-
-
