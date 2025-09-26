@@ -124,6 +124,19 @@
           "description": "Same as the global option, but for this env. See global option for notes about overrides.",
           "title": "Exclude"
         },
+        "frozen_envs": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Same as the global option, but for this env. If not provided, global value is _not_ used.",
+          "title": "Frozen Envs"
+        },
         "menu_packages": {
           "anyOf": [
             {
@@ -693,6 +706,37 @@
       },
       "title": "Extra Files",
       "type": "array"
+    },
+    "frozen_envs": {
+      "anyOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "items": {
+            "anyOf": [
+              {
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "additionalProperties": {
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "propertyNames": {
+                  "minLength": 1
+                },
+                "type": "object"
+              }
+            ]
+          },
+          "type": "array"
+        }
+      ],
+      "default": false,
+      "description": "Protected environments that cannot be altered after being marked \"frozen\". Requires conda 25.7.0 or newer. This setting can be passed as:\n- `bool`: if `True`, all environments (`base` or `extra_envs`) will be marked as frozen.\n- `str`: path to file relative to the directory where `construct.yaml` is located\n- `Mapping[str, str]`: map of path in disk to path in prefix.",
+      "title": "Frozen Envs"
     },
     "header_image": {
       "anyOf": [
