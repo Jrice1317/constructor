@@ -848,6 +848,15 @@ class ConstructorConfiguration(BaseModel):
     ```
     """
 
+    frozen_envs:  bool | list[NonEmptyStr | dict[NonEmptyStr, NonEmptyStr]] = False
+    """
+    Protected environments that cannot be altered after being marked "frozen". Requires conda 25.7.0 or newer. This setting can be passed as:
+
+    - `bool`: if `True`, all environments (`base` or `extra_envs`) will be marked as frozen.
+    - `str`: path to file relative to the directory where `construct.yaml` is located
+    - `Mapping[str, str]`: map of path in disk to path in prefix.
+    """
+
 
 def fix_descriptions(obj):
     for key, value in obj.items():
