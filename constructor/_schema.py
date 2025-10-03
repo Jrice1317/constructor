@@ -98,7 +98,7 @@ class ExtraEnv(BaseModel):
     Same as the global option, but for this env.
     See global option for notes about overrides.
     """
-    frozen_envs: bool | None = None
+    freeze_env: NonEmptyStr | dict | bool | None = None
     """
     Same as the global option, but for this env.
     If not provided, global value is _not_ used.
@@ -834,14 +834,20 @@ class ConstructorConfiguration(BaseModel):
     Requires conda-standalone 24.11.0 or newer.
     """
 
-    frozen_envs:  bool | list[NonEmptyStr | dict[NonEmptyStr, NonEmptyStr]] = False
+    freeze_base: NonEmptyStr | dict | bool | None = None
     """
-    Protected environments that cannot be altered after being marked "frozen". Requires conda 25.7.0 or newer. This setting can be passed as:
+    Protect the base environment with a `frozen` marker file. Requires conda 25.7.0 or newer. This setting can be:
 
-    - `bool`: if `True`, all environments (`base` or `extra_envs`) will be marked as frozen.
-    - `str`: path to file relative to the directory where `construct.yaml` is located
-    - `Mapping[str, str]`: map of path in disk to path in prefix.
+    - `bool`: The default is `False` and does not protect the `base` environment.If set to `True`, the `base` environment will be marked as frozen and a default message will be shown.
+    - `str`: The `base` environment will be protected and take the marker `frozen` file from a file path.
+    - `dict`: The `base` environment will be protected and a `frozen` file will be created with the content of the dictionary in JSON format.
     """
+
+    freeze_env: NonEmptyStr | dict | bool | None = None
+    """
+    Protect extra environments similar to `freeze_base`
+    """
+
 
 
 def fix_descriptions(obj):
