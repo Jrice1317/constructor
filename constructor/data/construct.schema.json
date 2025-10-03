@@ -124,8 +124,16 @@
           "description": "Same as the global option, but for this env. See global option for notes about overrides.",
           "title": "Exclude"
         },
-        "frozen_envs": {
+        "freeze_env": {
           "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "additionalProperties": true,
+              "type": "object"
+            },
             {
               "type": "boolean"
             },
@@ -135,7 +143,7 @@
           ],
           "default": null,
           "description": "Same as the global option, but for this env. If not provided, global value is _not_ used.",
-          "title": "Frozen Envs"
+          "title": "Freeze Env"
         },
         "menu_packages": {
           "anyOf": [
@@ -707,36 +715,47 @@
       "title": "Extra Files",
       "type": "array"
     },
-    "frozen_envs": {
+    "freeze_base": {
       "anyOf": [
+        {
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "additionalProperties": true,
+          "type": "object"
+        },
         {
           "type": "boolean"
         },
         {
-          "items": {
-            "anyOf": [
-              {
-                "minLength": 1,
-                "type": "string"
-              },
-              {
-                "additionalProperties": {
-                  "minLength": 1,
-                  "type": "string"
-                },
-                "propertyNames": {
-                  "minLength": 1
-                },
-                "type": "object"
-              }
-            ]
-          },
-          "type": "array"
+          "type": "null"
         }
       ],
-      "default": false,
-      "description": "Protected environments that cannot be altered after being marked \"frozen\". Requires conda 25.7.0 or newer. This setting can be passed as:\n- `bool`: if `True`, all environments (`base` or `extra_envs`) will be marked as frozen.\n- `str`: path to file relative to the directory where `construct.yaml` is located\n- `Mapping[str, str]`: map of path in disk to path in prefix.",
-      "title": "Frozen Envs"
+      "default": null,
+      "description": "Protect the base environment with a `frozen` marker file. Requires conda 25.7.0 or newer. This setting can be:\n- `bool`: The default is `False` and does not protect the `base` environment.If set to `True`, the `base` environment will be marked as frozen and a default message will be shown.\n- `str`: The `base` environment will be protected and take the marker `frozen` file from a file path.\n- `dict`: The `base` environment will be protected and a `frozen` file will be created with the content of the dictionary in JSON format.",
+      "title": "Freeze Base"
+    },
+    "freeze_env": {
+      "anyOf": [
+        {
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Protect extra environments similar to `freeze_base`",
+      "title": "Freeze Env"
     },
     "header_image": {
       "anyOf": [
