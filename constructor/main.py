@@ -165,6 +165,31 @@ def main_build(
         if isinstance(info[key], str):
             info[key] = list(yield_lines(join(dir_path, info[key])))
 
+    def has_frozen_file(extra_files: list[str | dict[str, str]]) -> bool:
+        def is_conda_meta_frozen(path_str: str) -> bool:
+            path = Path(path_str)
+            return path.parts == ("conda-meta", "frozen") or (
+                len(path.parts) == 4
+                and path.parts[0] == "envs"
+                and path.parts[-2:] == ("conda-meta", "frozen")
+            )
+
+        for file in extra_files:
+            if isinstance(file, str) and is_conda_meta_frozen(file):
+                return True
+            elif isinstance(file, dict) and any(is_conda_meta_frozen(val) for val in file.values()):
+                return True
+        return False
+
+    if (
+        has_frozen_file(info.get("extra_files", []))
+        and exe_type == StandaloneExe.CONDA
+        and check_version(exe_version, min_version="25.5.0", max_version="25.7.0")
+    ):
+        sys.exit(
+            "Error: handling conda-meta/frozen marker files requires conda-standalone newer than 25.7.x"
+        )
+
     # normalize paths to be copied; if they are relative, they must be to
     # construct.yaml's parent (dir_path)
     extras_types = ["extra_files", "temp_extra_files"]
