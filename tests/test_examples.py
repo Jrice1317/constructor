@@ -317,6 +317,9 @@ def _run_installer(
             check=check_subprocess,
             options=options,
         )
+        if request and ON_CI:
+            # GitHub runners run out of disk space if installation directories are not cleaned up
+            request.addfinalizer(lambda: shutil.rmtree(str(install_dir), ignore_errors=True))
     elif installer.suffix == ".pkg":
         if request and ON_CI:
             request.addfinalizer(lambda: shutil.rmtree(str(install_dir), ignore_errors=True))
@@ -1365,6 +1368,39 @@ def test_output_files(tmp_path):
         assert sorted(files_exist) == sorted(files_expected)
         files_exist = [file for file in files_not_expected if (root_path / file).exists()]
         assert files_exist == []
+
+
+@pytest.mark.xfail(
+    condition=(
+        CONDA_EXE == StandaloneExe.CONDA
+        and check_version(CONDA_EXE_VERSION, min_version="25.5.0", max_version="25.7.0")
+    ),
+    reason="conda-standalone 25.5.x fails with protected environments",
+    strict=True,
+)
+def test_frozen_environment(tmp_path, request):
+    input_path = _example_path("protected_base")
+    for installer, install_dir in create_installer(input_path, tmp_path):
+        _run_installer(
+            input_path,
+            installer,
+            install_dir,
+            request=request,
+            uninstall=False,
+        )
+
+        expected_frozen_paths = {
+            install_dir / "conda-meta" / "frozen",
+            install_dir / "envs" / "default" / "conda-meta" / "frozen",
+        }
+
+        actual_frozen_paths = set()
+        for env in install_dir.glob("**/conda-meta/history"):
+            frozen_file = env.parent / "frozen"
+            if frozen_file.exists():
+                actual_frozen_paths.add(frozen_file)
+
+        assert expected_frozen_paths == actual_frozen_paths
 
 
 def test_regressions(tmp_path, request):
