@@ -833,7 +833,6 @@ class ConstructorConfiguration(BaseModel):
     Use the standalone binary to perform the uninstallation on Windows.
     Requires conda-standalone 24.11.0 or newer.
     """
-
     freeze_base: NonEmptyStr | dict | bool | None = None
     """
     Protect the base environment with a `frozen` marker file. Requires conda 25.7.0 or newer. This setting can be:
@@ -842,12 +841,10 @@ class ConstructorConfiguration(BaseModel):
     - `str`: The `base` environment will be protected and take the marker `frozen` file from a file path.
     - `dict`: The `base` environment will be protected and a `frozen` file will be created with the content of the dictionary in JSON format.
     """
-
     freeze_env: NonEmptyStr | dict | bool | None = None
     """
     Protect extra environments similar to `freeze_base`
     """
-
 
 
 def fix_descriptions(obj):
