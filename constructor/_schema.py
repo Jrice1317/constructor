@@ -856,12 +856,10 @@ class ConstructorConfiguration(BaseModel):
     - `str`: The `base` environment will be protected and take the marker `frozen` file from a file path.
     - `dict`: The `base` environment will be protected and a `frozen` file will be created with the content of the dictionary in JSON format.
     """
-
     freeze_env: NonEmptyStr | dict | bool | None = None
     """
     Protect extra environments similar to `freeze_base`
     """
-
 
 
 def fix_descriptions(obj):
