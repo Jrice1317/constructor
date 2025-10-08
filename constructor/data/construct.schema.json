@@ -124,26 +124,19 @@
           "description": "Same as the global option, but for this env. See global option for notes about overrides.",
           "title": "Exclude"
         },
-        "freeze_env": {
+        "frozen_file": {
           "anyOf": [
-            {
-              "minLength": 1,
-              "type": "string"
-            },
             {
               "additionalProperties": true,
               "type": "object"
-            },
-            {
-              "type": "boolean"
             },
             {
               "type": "null"
             }
           ],
           "default": null,
-          "description": "Same as the global option, but for this env. If not provided, global value is _not_ used.",
-          "title": "Freeze Env"
+          "description": "Same as the global option, but for this environment.",
+          "title": "Frozen File"
         },
         "menu_packages": {
           "anyOf": [
@@ -715,47 +708,19 @@
       "title": "Extra Files",
       "type": "array"
     },
-    "freeze_base": {
+    "frozen_file": {
       "anyOf": [
-        {
-          "minLength": 1,
-          "type": "string"
-        },
         {
           "additionalProperties": true,
           "type": "object"
-        },
-        {
-          "type": "boolean"
         },
         {
           "type": "null"
         }
       ],
       "default": null,
-      "description": "Protect the base environment with a `frozen` marker file. Requires conda 25.7.0 or newer. This setting can be:\n- `bool`: The default is `False` and does not protect the `base` environment.If set to `True`, the `base` environment will be marked as frozen and a default message will be shown.\n- `str`: The `base` environment will be protected and take the marker `frozen` file from a file path.\n- `dict`: The `base` environment will be protected and a `frozen` file will be created with the content of the dictionary in JSON format.",
-      "title": "Freeze Base"
-    },
-    "freeze_env": {
-      "anyOf": [
-        {
-          "minLength": 1,
-          "type": "string"
-        },
-        {
-          "additionalProperties": true,
-          "type": "object"
-        },
-        {
-          "type": "boolean"
-        },
-        {
-          "type": "null"
-        }
-      ],
-      "default": null,
-      "description": "Protect extra environments similar to `freeze_base`",
-      "title": "Freeze Env"
+      "description": "Protect the base environment with a `frozen` marker file. Requires conda 25.7.0 or newer. This setting can be:\n- `None` (default): Does not protect the `base` environment.\n- `dict`: The `base` environment will be protected. An empty dict will generate a default message. Otherwise, the content of the dictionary will result in a custom message.",
+      "title": "Frozen File"
     },
     "header_image": {
       "anyOf": [
