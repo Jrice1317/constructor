@@ -656,17 +656,12 @@ Allowed strings / keys: `hash`, `info.json`, `licenses`, `lockfile`, `pkgs_list`
 Use the standalone binary to perform the uninstallation on Windows.
 Requires conda-standalone 24.11.0 or newer.
 
-### `freeze_base`
+### `frozen_file`
 
 Protect the base environment with a `frozen` marker file. Requires conda 25.7.0 or newer. This setting can be:
 
-- `bool`: The default is `False` and does not protect the `base` environment.If set to `True`, the `base` environment will be marked as frozen and a default message will be shown.
-- `str`: The `base` environment will be protected and take the marker `frozen` file from a file path.
-- `dict`: The `base` environment will be protected and a `frozen` file will be created with the content of the dictionary in JSON format.
-
-### `freeze_env`
-
-Protect extra environments similar to `freeze_base`
+- `None` (default): Does not protect the `base` environment.
+- `dict`: The `base` environment will be protected. An empty dict will generate a default message. Otherwise, the content of the dictionary will result in a custom message.
 
 
 ## Available selectors
