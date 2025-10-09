@@ -832,10 +832,9 @@ class ConstructorConfiguration(BaseModel):
     """
     frozen_file: dict | None = None
     """
-    Protect the base environment with a `frozen` marker file. Requires conda 25.7.0 or newer. This setting can be:
+    Protect the base environment with a `frozen` marker file. Requires conda 25.5.0 or newer. This setting can be:
 
-    - `None` (default): Does not protect the `base` environment.
-    - `dict`: The `base` environment will be protected. An empty dict will generate a default message. Otherwise, the content of the dictionary will result in a custom message.
+    - `dict`: The `base` environment will be protected via a `frozen` marker file.  If not used, the `base` environment will not be protected. (See CEP-22 for details on the content of the `frozen` marker file.)
     """
 
 
