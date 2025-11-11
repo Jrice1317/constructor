@@ -124,7 +124,7 @@
           "description": "Same as the global option, but for this env. See global option for notes about overrides.",
           "title": "Exclude"
         },
-        "frozen_file": {
+        "freeze_env": {
           "anyOf": [
             {
               "additionalProperties": {

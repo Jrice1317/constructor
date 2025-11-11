@@ -658,7 +658,7 @@ Allowed strings / keys: `hash`, `info.json`, `licenses`, `lockfile`, `pkgs_list`
 Use the standalone binary to perform the uninstallation on Windows.
 Requires conda-standalone 24.11.0 or newer.
 
-### `frozen_file`
+### `freeze_env`
 
 Protects the base conda environment against modifications by supported package managers.
 
