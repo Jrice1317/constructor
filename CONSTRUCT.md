@@ -658,11 +658,11 @@ Requires conda-standalone 24.11.0 or newer.
 
 ### `freeze_env`
 
-Protect environments with a `frozen` marker file. Requires conda 25.5.0 or newer.
+Protect the conda environment with a `frozen` marker file. Requires conda 25.5.0 or newer. See CEP-22 for the `frozen` marker file specification.
 
-If provided, the nested dictionary content will be written to a `frozen` marker file
-in the specified environment. If not provided, the environment will not be protected.
-See CEP-22 for the `frozen` marker file specification.
+The configuration must use 'conda' as the key. The value can be an empty dictionary (for default message)
+or contain 'message' and/or 'error' keys with custom strings. If not provided, the environment will not be protected.
+
 
 Example with custom message:
 ```yaml
