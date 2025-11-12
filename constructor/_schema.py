@@ -64,6 +64,22 @@ class ChannelRemap(BaseModel):
     "Target channel, after being mapped"
 
 
+class FreezeEnvConfig(BaseModel):
+    """
+    Configuration for freezing the conda environment.
+
+    Validates the structure of freeze configuration, ensuring both 'message' and 'error'
+    are optional non-empty strings when provided.
+    """
+    model_config: ConfigDict = _base_config_dict
+
+    message: NonEmptyStr | None = None
+    "Custom message to display when the environment is frozen. If not provided, a default message is used."
+
+    error: NonEmptyStr | None = None
+    "Custom error message to display when a modification is attempted on the frozen environment."
+
+
 class ExtraEnv(BaseModel):
     model_config: ConfigDict = _base_config_dict
 
@@ -98,9 +114,8 @@ class ExtraEnv(BaseModel):
     Same as the global option, but for this env.
     See global option for notes about overrides.
     """
-    freeze_env: dict | None = None
+    freeze_env: dict[Literal["conda"], FreezeEnvConfig] | None = None
     "Same as the global option, but for this conda environment."
-
 
 class BuildOutputs(StrEnum):
     "Allowed keys in 'build_outputs' setting."
@@ -832,13 +847,13 @@ class ConstructorConfiguration(BaseModel):
     Use the standalone binary to perform the uninstallation on Windows.
     Requires conda-standalone 24.11.0 or newer.
     """
-    freeze_env: dict[Literal["conda"], dict] | None = None
+    freeze_env: dict[Literal["conda"], FreezeEnvConfig] | None = None
     """
-    Protect environments with a `frozen` marker file. Requires conda 25.5.0 or newer.
+    Protect the conda environment with a `frozen` marker file. Requires conda 25.5.0 or newer. See CEP-22 for the `frozen` marker file specification.
 
-    If provided, the nested dictionary content will be written to a `frozen` marker file
-    in the specified environment. If not provided, the environment will not be protected.
-    See CEP-22 for the `frozen` marker file specification.
+    The configuration must use 'conda' as the key. The value can be an empty dictionary (for default message)
+    or contain 'message' and/or 'error' keys with custom strings. If not provided, the environment will not be protected.
+
 
     Example with custom message:
     ```yaml
