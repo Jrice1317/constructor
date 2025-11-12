@@ -221,6 +221,8 @@ def main_build(
         "conclusion_file",
         "signing_certificate",
         "post_install_pages",
+        "frozen_file",
+        "freeze_env"
     ):
         if value := info.get(key):  # only join if there's a truthy value set
             if isinstance(value, str):
