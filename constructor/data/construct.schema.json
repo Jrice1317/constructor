@@ -192,6 +192,42 @@
       "title": "ExtraEnv",
       "type": "object"
     },
+    "FreezeEnvConfig": {
+      "additionalProperties": false,
+      "description": "Configuration for freezing the conda environment.\nValidates the structure of freeze configuration, ensuring both 'message' and 'error' are optional non-empty strings when provided.",
+      "properties": {
+        "error": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Custom error message to display when a modification is attempted on the frozen environment.",
+          "title": "Error"
+        },
+        "message": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Custom message to display when the environment is frozen. If not provided, a default message is used.",
+          "title": "Message"
+        }
+      },
+      "title": "FreezeEnvConfig",
+      "type": "object"
+    },
     "GuaranteedAlgorithmsEnum": {
       "enum": [
         "blake2b",
@@ -718,8 +754,7 @@
       "anyOf": [
         {
           "additionalProperties": {
-            "additionalProperties": true,
-            "type": "object"
+            "$ref": "#/$defs/FreezeEnvConfig"
           },
           "propertyNames": {
             "const": "conda"
