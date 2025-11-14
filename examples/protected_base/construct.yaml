@@ -20,7 +20,6 @@ specs:
 freeze_env:
   conda:
     message: "The base environment is protected and cannot be modified."
-    error: "Modifications to the base environment are not allowed."
 
 extra_envs:
   # Example 3: Protect env1 with empty frozen marker file
