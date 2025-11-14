@@ -848,28 +848,6 @@ class ConstructorConfiguration(BaseModel):
     ```
     """
 
-    freeze_base: NonEmptyStr | dict | bool | None = None
-    """
-    Protect the conda environment with a `frozen` marker file. Requires conda 25.5.0 or newer. See CEP-22 for the `frozen` marker file specification.
-
-    The configuration must use 'conda' as the key. The value can be an empty dictionary (for default message)
-    or contain 'message' and/or 'error' keys with custom strings. If not provided, the environment will not be protected.
-
-
-    Example with custom message:
-    ```yaml
-        freeze_env:
-            conda:
-                message: "This environment is frozen."
-    ```
-
-    Example with default message:
-    ```yaml
-        freeze_env:
-            conda: {}
-    ```
-    """
-
 
 def fix_descriptions(obj):
     for key, value in obj.items():
