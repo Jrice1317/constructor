@@ -66,15 +66,18 @@ class ChannelRemap(BaseModel):
 
 class FreezeEnvConfig(BaseModel):
     """
-    Configuration for freezing the conda environment.
+    Configuration for freezing a conda environment.
 
-    Validates the structure of freeze configuration, ensuring both 'message' and 'error'
-    are optional non-empty strings when provided.
+    The content of this dictionary will be written to the frozen marker file. Both 'message' and 'error'
+    are optional non-empty strings when provided. If no dictionary is provided, default content will be used.
     """
-    model_config: ConfigDict = _base_config_dict
+    model_config: ConfigDict = ConfigDict(
+        extra="allow",
+        use_attribute_docstrings=True,
+    )
 
     message: NonEmptyStr | None = None
-    "Custom message to display when the environment is frozen. If not provided, a default message is used."
+    "Custom message to display when the environment is frozen."
 
     error: NonEmptyStr | None = None
     "Custom error message to display when a modification is attempted on the frozen environment."
@@ -851,21 +854,27 @@ class ConstructorConfiguration(BaseModel):
     """
     Protect the conda environment with a `frozen` marker file. Requires conda 25.5.0 or newer. See CEP-22 for the `frozen` marker file specification.
 
-    The configuration must use 'conda' as the key. The value can be an empty dictionary (for default message)
-    or contain 'message' and/or 'error' keys with custom strings. If not provided, the environment will not be protected.
+    The value must use 'conda' as the key, and can be:
+      - An empty dictionary `{}` to create an empty frozen marker file and receive the default message
+      - A non-empty dictionary with desired content (i.e. message or other key-value pairs) to customize the frozen marker file
 
+    The dictionary content is written as-is to the frozen marker file.
 
-    Example with custom message:
+    Alternatively, you can provide your own pre-created frozen marker file using the `extra_files` option. If both `freeze_env` and a custom frozen marker file listed under `extra_files` are provided for the same environment, the custom file will take precedence.
+
+    If none of the above are provided, the environment will not be protected.
+
+    Example for default:
     ```yaml
-        freeze_env:
-            conda:
-                message: "This environment is frozen."
+    freeze_env:
+        conda: {}
     ```
 
-    Example with default message:
+    Example for custom content:
     ```yaml
-        freeze_env:
-            conda: {}
+    freeze_env:
+        conda:
+            message: "This environment is frozen and cannot be modified."
     ```
     """
 
