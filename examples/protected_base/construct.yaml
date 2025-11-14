@@ -12,13 +12,45 @@ specs:
   - python
   - conda
 
+# Example 1: Protect base environment with empty frozen marker file
+# freeze_env:
+#   conda: {}
+
+# Example 2: Protect base environment with custom frozen marker file content
+freeze_env:
+  conda:
+    message: "The base environment is protected and cannot be modified."
+    error: "Modifications to the base environment are not allowed."
+
 extra_envs:
-  default:
+  # Example 3: Protect env1 with empty frozen marker file
+  env1:
     specs:
-      - python
-      - pip
+      - conda
+    freeze_env:
+      conda: {}
+
+  # Example 4: Protect env2 with custom frozen marker file content
+  env2:
+    specs:
+      - conda
+    freeze_env:
+      conda:
+        message: "This environment is protected and cannot be modified."
+
+  # Example 5: Env3 will be protected using extra_files (see below)
+  env3:
+    specs:
       - conda
 
 extra_files:
-  - frozen.json: conda-meta/frozen
-  - frozen.json: envs/default/conda-meta/frozen
+  # Example 5 (cont): Protects env3 with pre-created frozen marker file
+  - frozen.json: envs/env3/conda-meta/frozen
+
+# WARNING: Do NOT use BOTH `freeze_env` and `extra_files` frozen marker files for the SAME environment
+#
+# # Invalid Example: Do NOT do this
+# freeze_env:
+#   conda: {}
+# extra_files:
+#   - frozen.json: conda-meta/frozen  # Conflicts with freeze_env above
