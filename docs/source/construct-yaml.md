@@ -658,25 +658,31 @@ Allowed strings / keys: `hash`, `info.json`, `licenses`, `lockfile`, `pkgs_list`
 Use the standalone binary to perform the uninstallation on Windows.
 Requires conda-standalone 24.11.0 or newer.
 
-### `freeze_env`
+### `freeze_base`
 
 Protect the conda environment with a `frozen` marker file. Requires conda 25.5.0 or newer. See CEP-22 for the `frozen` marker file specification.
 
-The configuration must use 'conda' as the key. The value can be an empty dictionary (for default message)
-or contain 'message' and/or 'error' keys with custom strings. If not provided, the environment will not be protected.
+The value must use 'conda' as the key, and can be:
+  - An empty dictionary `{}` to create an empty frozen marker file and receive the default message
+  - A non-empty dictionary with desired content (i.e. message or other key-value pairs) to customize the frozen marker file
 
+The dictionary content is written as-is to the frozen marker file.
 
-Example with custom message:
+Alternatively, you can provide your own pre-created frozen marker file using the `extra_files` option. If both `freeze_base` and a custom frozen marker file listed under `extra_files` are provided for the same environment, the custom file will take precedence.
+
+If none of the above are provided, the environment will not be protected.
+
+Example for default:
 ```yaml
-    freeze_env:
-        conda:
-            message: "This environment is frozen."
+freeze_base:
+    conda: {}
 ```
 
-Example with default message:
+Example for custom content:
 ```yaml
-    freeze_env:
-        conda: {}
+freeze_base:
+    conda:
+        message: "This `base` environment is frozen and cannot be modified."
 ```
 
 
