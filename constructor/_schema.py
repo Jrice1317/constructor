@@ -118,7 +118,7 @@ class ExtraEnv(BaseModel):
     See global option for notes about overrides.
     """
     freeze_env: dict[Literal["conda"], FreezeEnvConfig] | None = None
-    "Same as the global option, but for this conda environment."
+    "Same as the global option, `freeze_base`, but for this conda environment."
 
 class BuildOutputs(StrEnum):
     "Allowed keys in 'build_outputs' setting."
@@ -850,7 +850,7 @@ class ConstructorConfiguration(BaseModel):
     Use the standalone binary to perform the uninstallation on Windows.
     Requires conda-standalone 24.11.0 or newer.
     """
-    freeze_env: dict[Literal["conda"], FreezeEnvConfig] | None = None
+    freeze_base: dict[Literal["conda"], FreezeEnvConfig] | None = None
     """
     Protect the conda environment with a `frozen` marker file. Requires conda 25.5.0 or newer. See CEP-22 for the `frozen` marker file specification.
 
@@ -860,21 +860,21 @@ class ConstructorConfiguration(BaseModel):
 
     The dictionary content is written as-is to the frozen marker file.
 
-    Alternatively, you can provide your own pre-created frozen marker file using the `extra_files` option. If both `freeze_env` and a custom frozen marker file listed under `extra_files` are provided for the same environment, the custom file will take precedence.
+    Alternatively, you can provide your own pre-created frozen marker file using the `extra_files` option. If both `freeze_base` and a custom frozen marker file listed under `extra_files` are provided for the same environment, the custom file will take precedence.
 
     If none of the above are provided, the environment will not be protected.
 
     Example for default:
     ```yaml
-    freeze_env:
+    freeze_base:
         conda: {}
     ```
 
     Example for custom content:
     ```yaml
-    freeze_env:
+    freeze_base:
         conda:
-            message: "This environment is frozen and cannot be modified."
+            message: "This `base` environment is frozen and cannot be modified."
     ```
     """
 
