@@ -236,9 +236,7 @@ def main_build(
         "readme_file",
         "conclusion_file",
         "signing_certificate",
-        "post_install_pages",
-        "frozen_file",
-        "freeze_env"
+        "post_install_pages"
     ):
         if value := info.get(key):  # only join if there's a truthy value set
             if isinstance(value, str):
@@ -273,7 +271,43 @@ def main_build(
                 for orig, dest in path.items():
                     orig = abspath(join(dir_path, orig))
                     new_extras.append({orig: dest})
+
+                    if extra_type == "extra_files":
+                        # Warn if frozen marker file is duplicated
+                        env = get_frozen_env_from_path(dest)
+                        if env is None:
+                            continue
+                        if env in frozens:
+                            logger.warning(
+                                f"Duplicate frozen marker files for '{env}' environment found. "
+                                f"The 'extra_files' will override the {'freeze_base' if env == 'base' else 'freeze_env'} setting."
+                            )
+                        frozens[env] = {
+                            "source": orig,
+                            "dest": dest,
+                            "config": {} # empty config since user provided file
+                        }
         info[extra_type] = new_extras
+    info["_frozen_marker_files"] = frozens
+
+    # Check for frozen marker files and conflicting settings
+    if (
+        frozens
+        and exe_type == StandaloneExe.CONDA
+        and not check_version(exe_version, min_version="25.7.0")
+    ):
+        sys.exit(
+            "Error: handling conda-meta/frozen marker files requires conda-standalone newer than 25.7.x"
+        )
+
+    # if (
+    #     (info.get("freeze_base") or any(env.get("freeze_env") for env in info.get("extra_envs", {}).values()))
+    #     and exe_type == StandaloneExe.CONDA
+    #     and check_version(exe_version, min_version="25.5.0", max_version="25.7.0")
+    # ):
+    #     sys.exit(
+    #         "Error: freezing environments requires conda-standalone newer than 25.7.x"
+    #     )
 
     for key in "channels", "specs", "exclude", "packages", "menu_packages", "virtual_specs":
         if key in info:
