@@ -64,25 +64,6 @@ class ChannelRemap(BaseModel):
     "Target channel, after being mapped"
 
 
-class FreezeEnvConfig(BaseModel):
-    """
-    Configuration for freezing a conda environment.
-
-    The content of this dictionary will be written to the frozen marker file. Both 'message' and 'error'
-    are optional non-empty strings when provided. If no dictionary is provided, default content will be used.
-    """
-    model_config: ConfigDict = ConfigDict(
-        extra="allow",
-        use_attribute_docstrings=True,
-    )
-
-    message: NonEmptyStr | None = None
-    "Custom message to display when the environment is frozen."
-
-    error: NonEmptyStr | None = None
-    "Custom error message to display when a modification is attempted on the frozen environment."
-
-
 class ExtraEnv(BaseModel):
     model_config: ConfigDict = _base_config_dict
 
@@ -117,8 +98,8 @@ class ExtraEnv(BaseModel):
     Same as the global option, but for this env.
     See global option for notes about overrides.
     """
-    freeze_env: dict[Literal["conda"], FreezeEnvConfig] | None = None
-    "Same as the global option, `freeze_base`, but for this conda environment."
+    freeze_env: dict[Literal["conda"], dict] | None = None
+    "Same as `freeze_base`, but for this conda environment."
 
 class BuildOutputs(StrEnum):
     "Allowed keys in 'build_outputs' setting."
@@ -850,31 +831,29 @@ class ConstructorConfiguration(BaseModel):
     Use the standalone binary to perform the uninstallation on Windows.
     Requires conda-standalone 24.11.0 or newer.
     """
-    freeze_base: dict[Literal["conda"], FreezeEnvConfig] | None = None
+    freeze_base: dict[Literal["conda"], dict] | None = None
     """
-    Protect the conda environment with a `frozen` marker file. Requires conda 25.5.0 or newer. See CEP-22 for the `frozen` marker file specification.
+    Protects the base conda environment against modifications by supported package managers.
 
-    The value must use 'conda' as the key, and can be:
-      - An empty dictionary `{}` to create an empty frozen marker file and receive the default message
-      - A non-empty dictionary with desired content (i.e. message or other key-value pairs) to customize the frozen marker file
+    Supported package managers:
+        - `conda`: Protects against conda modifications
 
-    The dictionary content is written as-is to the frozen marker file.
+    The value for each package manager is a dictionary written to the `frozen` marker file.
+    See CEP-22 for the `frozen` marker file specification.
 
-    Alternatively, you can provide your own pre-created frozen marker file using the `extra_files` option. If both `freeze_base` and a custom frozen marker file listed under `extra_files` are provided for the same environment, the custom file will take precedence.
+    Alternatively, you can provide your own pre-created `frozen` marker file using the `extra_files` option. Note that `extra_files` will override this option if both are provided for the same environment.
 
-    If none of the above are provided, the environment will not be protected.
-
-    Example for default:
+    Example with empty frozen marker file:
     ```yaml
     freeze_base:
         conda: {}
     ```
 
-    Example for custom content:
+    Example with custom content:
     ```yaml
     freeze_base:
         conda:
-            message: "This `base` environment is frozen and cannot be modified."
+            message: "This base environment is frozen and cannot be modified."
     ```
     """
 
