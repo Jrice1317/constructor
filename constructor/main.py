@@ -98,7 +98,7 @@ def validate_frozen_envs(info, exe_type, exe_version):
         - conda-standalone 25.5.x is not used (has known issues)
         - Warns if conda-standalone < 25.5.0 (frozen files will be ignored)
     """
-    def get_frozen_env_from_path(dest: str | dict) ->set[str] | None:
+    def get_frozen_env_from_path(dest: str | dict) -> set[str] | None:
         """Extract environment name from frozen marker destination path.
 
         Returns:
@@ -118,20 +118,19 @@ def validate_frozen_envs(info, exe_type, exe_version):
         if isinstance(dest, str):
             if env := get_env(dest):
                 envs.add(env)
-
-        if isinstance(dest, dict):
+        elif isinstance(dest, dict):
             for path in dest.values():
                 if env := get_env(path):
                     envs.add(env)
 
-        return envs if envs else None
+        return envs
 
     # Collect environments using freeze_base/freeze_env
     frozen_envs = set()
-    if info.get("freeze_base"):
+    if info.get("freeze_base", {}).get("conda") is not None:
         frozen_envs.add("base")
     for env_name, env_config in info.get("extra_envs", {}).items():
-        if env_config.get("freeze_env"):
+        if env_config.get("freeze_env", {}).get("conda") is not None:
             frozen_envs.add(env_name)
 
     # Check for conflicts with extra_files
