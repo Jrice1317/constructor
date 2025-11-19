@@ -841,8 +841,6 @@ class ConstructorConfiguration(BaseModel):
     The value for each package manager is a dictionary written to the `frozen` marker file.
     See CEP-22 for the `frozen` marker file specification.
 
-    Alternatively, you can provide your own pre-created `frozen` marker file using the `extra_files` option. Note that `extra_files` will override this option if both are provided for the same environment.
-
     Example with empty frozen marker file:
     ```yaml
     freeze_base:
