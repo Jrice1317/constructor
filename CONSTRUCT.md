@@ -660,29 +660,25 @@ Requires conda-standalone 24.11.0 or newer.
 
 ### `freeze_base`
 
-Protect the conda environment with a `frozen` marker file. Requires conda 25.5.0 or newer. See CEP-22 for the `frozen` marker file specification.
+Protects the base conda environment against modifications by supported package managers.
 
-The value must use 'conda' as the key, and can be:
-  - An empty dictionary `{}` to create an empty frozen marker file and receive the default message
-  - A non-empty dictionary with desired content (i.e. message or other key-value pairs) to customize the frozen marker file
+Supported package managers:
+    - `conda`: Protects against conda modifications
 
-The dictionary content is written as-is to the frozen marker file.
+The value for each package manager is a dictionary written to the `frozen` marker file.
+See CEP-22 for the `frozen` marker file specification.
 
-Alternatively, you can provide your own pre-created frozen marker file using the `extra_files` option. If both `freeze_base` and a custom frozen marker file listed under `extra_files` are provided for the same environment, the custom file will take precedence.
-
-If none of the above are provided, the environment will not be protected.
-
-Example for default:
+Example with empty frozen marker file:
 ```yaml
 freeze_base:
     conda: {}
 ```
 
-Example for custom content:
+Example with custom content:
 ```yaml
 freeze_base:
     conda:
-        message: "This `base` environment is frozen and cannot be modified."
+        message: "This base environment is frozen and cannot be modified."
 ```
 
 

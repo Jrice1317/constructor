@@ -128,7 +128,8 @@
           "anyOf": [
             {
               "additionalProperties": {
-                "$ref": "#/$defs/FreezeEnvConfig"
+                "additionalProperties": true,
+                "type": "object"
               },
               "propertyNames": {
                 "const": "conda"
@@ -140,7 +141,7 @@
             }
           ],
           "default": null,
-          "description": "Same as the global option, `freeze_base`, but for this conda environment.",
+          "description": "Same as `freeze_base`, but for this conda environment.",
           "title": "Freeze Env"
         },
         "menu_packages": {
@@ -189,42 +190,6 @@
         }
       },
       "title": "ExtraEnv",
-      "type": "object"
-    },
-    "FreezeEnvConfig": {
-      "additionalProperties": true,
-      "description": "Configuration for freezing a conda environment.\nThe content of this dictionary will be written to the frozen marker file. Both 'message' and 'error' are optional non-empty strings when provided. If no dictionary is provided, default content will be used.",
-      "properties": {
-        "error": {
-          "anyOf": [
-            {
-              "minLength": 1,
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null,
-          "description": "Custom error message to display when a modification is attempted on the frozen environment.",
-          "title": "Error"
-        },
-        "message": {
-          "anyOf": [
-            {
-              "minLength": 1,
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null,
-          "description": "Custom message to display when the environment is frozen.",
-          "title": "Message"
-        }
-      },
-      "title": "FreezeEnvConfig",
       "type": "object"
     },
     "GuaranteedAlgorithmsEnum": {
@@ -753,7 +718,8 @@
       "anyOf": [
         {
           "additionalProperties": {
-            "$ref": "#/$defs/FreezeEnvConfig"
+            "additionalProperties": true,
+            "type": "object"
           },
           "propertyNames": {
             "const": "conda"
@@ -765,7 +731,7 @@
         }
       ],
       "default": null,
-      "description": "Protect the conda environment with a `frozen` marker file. Requires conda 25.5.0 or newer. See CEP-22 for the `frozen` marker file specification.\nThe value must use 'conda' as the key, and can be:  - An empty dictionary `{}` to create an empty frozen marker file and receive the default message  - A non-empty dictionary with desired content (i.e. message or other key-value pairs) to customize the frozen marker file\nThe dictionary content is written as-is to the frozen marker file.\nAlternatively, you can provide your own pre-created frozen marker file using the `extra_files` option. If both `freeze_base` and a custom frozen marker file listed under `extra_files` are provided for the same environment, the custom file will take precedence.\nIf none of the above are provided, the environment will not be protected.\nExample for default: ```yaml\nfreeze_base:\n    conda: {}\n```\n\nExample for custom content:\n```yaml\nfreeze_base:\n    conda:\n        message: \"This `base` environment is frozen and cannot be modified.\"\n```",
+      "description": "Protects the base conda environment against modifications by supported package managers.\nSupported package managers:   - `conda`: Protects against conda modifications\nThe value for each package manager is a dictionary written to the `frozen` marker file. See CEP-22 for the `frozen` marker file specification.\nExample with empty frozen marker file: ```yaml\nfreeze_base:\n    conda: {}\n```\n\nExample with custom content:\n```yaml\nfreeze_base:\n    conda:\n        message: \"This base environment is frozen and cannot be modified.\"\n```",
       "title": "Freeze Base"
     },
     "header_image": {
