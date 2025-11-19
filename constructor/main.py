@@ -77,6 +77,67 @@ def get_output_filename(info):
         ext,
     )
 
+# Validate frozen environments
+def validate_frozen_envs(info, exe_type, exe_version):
+    """Validate frozen environments.
+
+        Checks:
+        - No conflicts between freeze_base/freeze_env and extra_files for same environment
+        - conda-standalone 25.5.x is not used (has known issues)
+        - Warns if conda-standalone < 25.5.0 (frozen files will be ignored)
+
+        Stores frozen environment info in `_frozen_markers` dict.
+    """
+    def get_frozen_env_from_path(dest: str) -> str | None:
+        """Extract environment name from frozen marker destination path."""
+        parts = Path(dest).parts
+        if parts == ("conda-meta", "frozen"):
+            return "base"
+        if len(parts) == 4 and parts[0] == "envs" and parts[-2:] == ("conda-meta", "frozen"):
+            return parts[1]
+        return None
+
+    # Collect environments using freeze_base/freeze_env
+    frozen_envs = {}
+    if info.get("freeze_base"):
+        frozen_envs["base"] = {
+            "method": "freeze_base",
+            "config": info["freeze_base"],
+        }
+    for env_name, env_config in info.get("extra_envs", {}).items():
+        if env_config.get("freeze_env"):
+            frozen_envs[env_name] = {
+                "method": "freeze_env",
+                "config": env_config["freeze_env"],
+            }
+
+    # Check for conflicts with extra_files
+    for file in info.get("extra_files", []):
+        if isinstance(file, dict):
+            for dest in file.values():
+                env = get_frozen_env_from_path(dest)
+                if env and env in frozen_envs:
+                    raise RuntimeError(
+                        f"Environment '{env}' has frozen markers from both "
+                        f"'{'freeze_base' if env == 'base' else 'freeze_env'}' and 'extra_files'. "
+                        "Please use only one method to provide frozen markers for each environment.")
+
+    info["_frozen_markers"] = frozen_envs
+
+    # Conda-standalone version validation
+    if frozen_envs and exe_type == StandaloneExe.CONDA:
+        # Block conda-standalone 25.5.x (has known issues with frozen environments)
+        if check_version(exe_version, min_version="25.5.0", max_version="25.7.0"):
+            sys.exit(
+                "Error: conda-standalone 25.5.x has known issues with frozen environments. "
+                "Please use conda-standalone 25.7.0 or newer."
+            )
+        # Warn for older versions (will ignore frozen files)
+        elif not check_version(exe_version, min_version="25.5.0"):
+            logger.warning(
+                "conda-standalone older than 25.5.0 does not support frozen environments. "
+                "Frozen marker files will be ignored at install time."
+            )
 
 def _conda_exe_supports_logging(conda_exe: str, conda_exe_type: StandaloneExe | None) -> bool:
     """Test if the standalone binary supports the the --log-file argument.
@@ -257,48 +318,6 @@ def main_build(
             info[key] = list(yield_lines(join(dir_path, info[key])))
 
     validate_frozen_envs(info, exe_type, exe_version)
-
-    # normalize paths to be copied; if they are relative, they must be to
-    # construct.yaml's parent (dir_path)
-    extras_types = ["extra_files", "temp_extra_files"]
-    for extra_type in extras_types:
-        extras = info.get(extra_type, ())
-        new_extras = []
-        for path in extras:
-            if isinstance(path, str):
-                new_extras.append(abspath(join(dir_path, path)))
-            elif isinstance(path, dict):
-                for orig, dest in path.items():
-                    orig = abspath(join(dir_path, orig))
-                    new_extras.append({orig: dest})
-
-                    if extra_type == "extra_files":
-                        # Warn if frozen marker file is duplicated
-                        env = get_frozen_env_from_path(dest)
-                        if env is None:
-                            continue
-                        if env in frozens:
-                            logger.warning(
-                                f"Duplicate frozen marker files for '{env}' environment found. "
-                                f"The 'extra_files' will override the {'freeze_base' if env == 'base' else 'freeze_env'} setting."
-                            )
-                        frozens[env] = {
-                            "source": orig,
-                            "dest": dest,
-                            "config": {} # empty config since user provided file
-                        }
-            # Check for frozen marker files and conflicting settings
-        if (
-            frozens
-            and exe_type == StandaloneExe.CONDA
-            and check_version(exe_version, min_version="25.5.0", max_version="25.7.0")
-        ):
-            sys.exit(
-                "Error: handling conda-meta/frozen marker files requires conda-standalone newer than 25.7.x. Note: conda-standalone 25.5.x has known issues with frozen environments. Older versions do not support frozen environments and will simply ignore, so there is no need for the installation to fail at this point."
-            )
-
-        return info["_frozen_marker_files"] == frozens
-
 
     # normalize paths to be copied; if they are relative, they must be to
     # construct.yaml's parent (dir_path)
