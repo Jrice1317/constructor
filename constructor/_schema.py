@@ -836,17 +836,10 @@ class ConstructorConfiguration(BaseModel):
     Supported package managers:
         - `conda`: Protects against conda modifications
 
-    The value for each package manager is a dictionary written to the `frozen` marker file.
-    See CEP-22 for the `frozen` marker file specification.
+    For `conda`, the dictionary is written into the `frozen` marker file.
+    See CEP-22 for the `frozen` marker file specification. For example:
 
-    Example with empty frozen marker file:
-    ```yaml
-    freeze_base:
-        conda: {}
     ```
-
-    Example with custom content:
-    ```yaml
     freeze_base:
         conda:
             message: "This base environment is frozen and cannot be modified."
