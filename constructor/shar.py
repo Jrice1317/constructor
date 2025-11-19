@@ -180,6 +180,18 @@ def create(info, verbose=False):
             f"envs/{env_name}/conda-meta/history",
         )
 
+    if info.get("freeze_base"):
+        pre_t.addfile(tarinfo=tarfile.TarInfo("conda-meta/frozen"))
+        post_t.add(join(tmp_dir, "conda-meta", "frozen"), "conda-meta/frozen")
+
+    for env_name, env_config in info.get("_extra_envs_info", {}).items():
+        if env_config.get("freeze_env"):
+            pre_t.addfile(tarinfo=tarfile.TarInfo(f"envs/{env_name}/conda-meta/frozen"))
+            post_t.add(
+                join(tmp_dir, "envs", env_name, "conda-meta", "frozen"),
+                f"envs/{env_name}/conda-meta/frozen",
+            )
+
     extra_files = copy_extra_files(info.get("extra_files", []), tmp_dir)
     for path in extra_files:
         post_t.add(path, relpath(path, tmp_dir))
