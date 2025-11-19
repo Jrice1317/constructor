@@ -147,6 +147,7 @@ def write_files(info: dict, workspace: str):
 
     - `conda-meta/initial-state.explicit.txt`: Lockfile to provision the base environment.
     - `conda-meta/history`: Prepared history file with the right requested specs in input file.
+    - `conda-meta/frozen`: Frozen marker file used to protect conda environment state.
     - `pkgs/urls` and `pkgs/urls.txt`: Direct URLs of packages used, with and without MD5 hashes.
     - `pkgs/cache/*.json`: Trimmed repodata to mock offline channels in use.
     - `pkgs/channels.txt`: Channels in use.
@@ -199,6 +200,10 @@ def write_files(info: dict, workspace: str):
     # (list of specs/dists to install)
     write_initial_state_explicit_txt(info, join(workspace, "conda-meta"), final_urls_md5s)
 
+    # base environment frozen marker files
+    if info.get("freeze_base"):
+        write_frozen(info["freeze_base"], join(workspace, "conda-meta"))
+
     for fn in files:
         os.chmod(join(workspace, fn), 0o664)
 
@@ -218,6 +223,9 @@ def write_files(info: dict, workspace: str):
         write_channels_txt(info, env_pkgs, env_config)
         # shortcuts
         write_shortcuts_txt(info, env_pkgs, env_config)
+        # frozen marker file
+        if env_config.get("freeze_env"):
+            write_frozen(env_config["freeze_env"], env_conda_meta)
 
 
 def write_conda_meta(info, dst_dir, final_urls_md5s, user_requested_specs=None):
@@ -242,6 +250,13 @@ def write_conda_meta(info, dst_dir, final_urls_md5s, user_requested_specs=None):
 
     with open(join(dst_dir, "history"), "w") as fh:
         fh.write("\n".join(builder))
+
+
+def write_frozen(freeze_info, dst_dir):
+    if freeze_info and "conda" in freeze_info:
+        frozen_path = join(dst_dir, "frozen")
+        with open(frozen_path, "w") as ff:
+            json.dump(freeze_info["conda"], ff, indent=2, sort_keys=True)
 
 
 def write_repodata_record(info, dst_dir):
