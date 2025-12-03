@@ -731,7 +731,7 @@
         }
       ],
       "default": null,
-      "description": "Protects the base conda environment against modifications by supported package managers.\nSupported package managers:   - `conda`: Protects against conda modifications\nThe value for each package manager is a dictionary written to the `frozen` marker file. See CEP-22 for the `frozen` marker file specification.\nExample with empty frozen marker file: ```yaml\nfreeze_base:\n    conda: {}\n```\n\nExample with custom content:\n```yaml\nfreeze_base:\n    conda:\n        message: \"This base environment is frozen and cannot be modified.\"\n```",
+      "description": "Protects the base conda environment against modifications by supported package managers.\nSupported package managers:   - `conda`: Protects against conda modifications\nFor `conda`, the dictionary is written into the `frozen` marker file. See CEP-22 for the `frozen` marker file specification. For example:\n```\nfreeze_base:\n    conda:\n        message: \"This base environment is frozen and cannot be modified.\"\n```",
       "title": "Freeze Base"
     },
     "header_image": {
