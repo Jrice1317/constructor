@@ -111,35 +111,20 @@ def validate_frozen_envs(info, exe_type, exe_version):
 
         Checks:
         - No conflicts between freeze_base/freeze_env and extra_files for same environment
-        - conda-standalone 25.5.x is not used (has known issues)
-        - Warns if conda-standalone < 25.5.0 (frozen files will be ignored)
+        - Conda-standalone version if frozen environments exist
     """
-    def get_frozen_env_from_path(dest: str | dict) -> set[str] | None:
+    def get_frozen_env(path) -> str | None:
         """Extract environment name from frozen marker destination path.
 
         Returns:
-            Set of environment names found in the path, or None if no frozen marker found.
+            Environment name if frozen marker found in the path, otherwise None.
         """
-
-        def get_env(path: str) -> str | None:
-            parts = Path(path).parts
-            if parts == ("conda-meta", "frozen"):
-                return "base"
-            elif len(parts) == 4 and parts[0] == "envs" and parts[-2:] == ("conda-meta", "frozen"):
-                return parts[1]
-            return None
-
-        envs = set()
-
-        if isinstance(dest, str):
-            if env := get_env(dest):
-                envs.add(env)
-        elif isinstance(dest, dict):
-            for path in dest.values():
-                if env := get_env(path):
-                    envs.add(env)
-
-        return envs
+        parts = Path(path).parts
+        if parts == ("conda-meta", "frozen"):
+            return "base"
+        elif len(parts) == 4 and parts[0] == "envs" and parts[-2:] == ("conda-meta", "frozen"):
+            return parts[1]
+        return None
 
     # Collect environments using freeze_base/freeze_env
     frozen_envs = set()
@@ -149,19 +134,30 @@ def validate_frozen_envs(info, exe_type, exe_version):
         if env_config.get("freeze_env", {}).get("conda") is not None:
             frozen_envs.add(env_name)
 
-    # Check for conflicts with extra_files
+    # Collect environments using extra_files frozen markers
     frozen_envs_extra_files = set()
-    for dest in info.get("extra_files", []):
-        if env := get_frozen_env_from_path(dest):
-            frozen_envs_extra_files.update(env)
+    paths = []
+    for file in info.get("extra_files", ()):
+        if isinstance(file, dict):
+            paths.extend(file.values())
+        elif isinstance(file, str):
+            paths.append(file)
 
+    for path in paths:
+        if env := get_frozen_env(path):
+            frozen_envs_extra_files.add(env)
+
+    # Check for conflicts with extra_files
     if common_envs := frozen_envs.intersection(frozen_envs_extra_files):
-        env = next(iter(common_envs))
+        messages = []
+        for env in sorted(common_envs):
+            messages.append(
+                f"Environment '{env}' has frozen markers from both "
+                f"'{'freeze_base' if env == 'base' else 'freeze_env'}' and 'extra_files'. "
+            )
         raise RuntimeError(
-            f"Environment '{env}' has frozen markers from both "
-            f"'{'freeze_base' if env == 'base' else 'freeze_env'}' and 'extra_files'. "
-            "Please use only one method to provide frozen markers for each environment.")
-
+            "Conflicts detected:\n" + "\n".join(messages) +
+            "\nPlease use only one method to provide frozen markers per environment.")
 
     # Conda-standalone version validation
     if frozen_envs and exe_type == StandaloneExe.CONDA:
@@ -170,12 +166,6 @@ def validate_frozen_envs(info, exe_type, exe_version):
             sys.exit(
                 "Error: conda-standalone 25.5.x has known issues with frozen environments. "
                 "Please use conda-standalone 25.7.0 or newer."
-            )
-        # Warn for older versions (will ignore frozen files)
-        elif not check_version(exe_version, min_version="25.5.0"):
-            logger.warning(
-                "conda-standalone older than 25.5.0 does not support frozen environments. "
-                "Frozen marker files will be ignored at install time."
             )
 
 def main_build(
