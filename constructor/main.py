@@ -106,7 +106,7 @@ def _win_install_needs_python_exe(conda_exe: str, conda_exe_type: StandaloneExe 
 
 
 # Validate frozen environments
-def validate_frozen_envs(info, exe_type, exe_version):
+def validate_frozen_envs(info, exe_type, exe_version) -> bool:
     """Validate frozen environments.
 
         Checks:
@@ -147,26 +147,24 @@ def validate_frozen_envs(info, exe_type, exe_version):
         if env := get_frozen_env(path):
             frozen_envs_extra_files.add(env)
 
+    if not frozen_envs and not frozen_envs_extra_files:
+        return
+
     # Check for conflicts with extra_files
     if common_envs := frozen_envs.intersection(frozen_envs_extra_files):
-        messages = []
-        for env in sorted(common_envs):
-            messages.append(
-                f"Environment '{env}' has frozen markers from both "
-                f"'{'freeze_base' if env == 'base' else 'freeze_env'}' and 'extra_files'. "
-            )
         raise RuntimeError(
-            "Conflicts detected:\n" + "\n".join(messages) +
-            "\nPlease use only one method to provide frozen markers per environment.")
+            f"Frozen marker files found from both "
+            f"'freeze_base / freeze_env' and 'extra_files' for the following environments: {', '.join(sorted(common_envs))}")
 
     # Conda-standalone version validation
-    if frozen_envs and exe_type == StandaloneExe.CONDA:
-        # Block conda-standalone 25.5.x (has known issues with frozen environments)
-        if check_version(exe_version, min_version="25.5.0", max_version="25.7.0"):
-            sys.exit(
-                "Error: conda-standalone 25.5.x has known issues with frozen environments. "
-                "Please use conda-standalone 25.7.0 or newer."
-            )
+    if ((frozen_envs or frozen_envs_extra_files)
+        and exe_type == StandaloneExe.CONDA
+        and check_version(exe_version, min_version="25.5.0", max_version="25.7.0")
+    ):
+        sys.exit(
+            "Error: conda-standalone 25.5.x has known issues with frozen environments. "
+            "Please use conda-standalone 25.7.0 or newer."
+        )
 
 def main_build(
     dir_path,
