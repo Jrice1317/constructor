@@ -660,7 +660,7 @@ Requires conda-standalone 24.11.0 or newer.
 
 ### `freeze_base`
 
-Protects the base conda environment against modifications by supported package managers.
+Protects the conda base environment against modifications by supported package managers.
 
 Supported package managers:
     - `conda`: Protects against conda modifications
