@@ -833,7 +833,7 @@ class ConstructorConfiguration(BaseModel):
     """
     freeze_base: dict[Literal["conda"], dict] | None = None
     """
-    Protects the base conda environment against modifications by supported package managers.
+    Protects the conda base environment against modifications by supported package managers.
 
     Supported package managers:
         - `conda`: Protects against conda modifications

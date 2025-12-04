@@ -122,7 +122,7 @@ def validate_frozen_envs(info, exe_type, exe_version) -> bool:
         parts = Path(path).parts
         if parts == ("conda-meta", "frozen"):
             return "base"
-        elif len(parts) == 4 and parts[0] == "envs" and parts[-2:] == ("conda-meta", "frozen"):
+        if len(parts) == 4 and parts[0] == "envs" and parts[-2:] == ("conda-meta", "frozen"):
             return parts[1]
         return None
 
