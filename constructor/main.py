@@ -141,8 +141,7 @@ def validate_frozen_envs(info, exe_type, exe_version) -> bool:
             f"'freeze_base / freeze_env' and 'extra_files' for the following environments: {', '.join(sorted(common_envs))}")
 
     # Conda-standalone version validation
-    if ((frozen_envs or frozen_envs_extra_files)
-        and exe_type == StandaloneExe.CONDA
+    if (exe_type == StandaloneExe.CONDA
         and check_version(exe_version, min_version="25.5.0", max_version="25.7.0")
     ):
         sys.exit(
