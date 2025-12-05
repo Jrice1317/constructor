@@ -256,7 +256,7 @@ def write_frozen(freeze_info, dst_dir):
     if freeze_info and "conda" in freeze_info:
         frozen_path = join(dst_dir, "frozen")
         with open(frozen_path, "w") as ff:
-            json.dump(freeze_info["conda"], ff, indent=2, sort_keys=True)
+            json.dump(freeze_info, ff, indent=2, sort_keys=True)
 
 
 def write_repodata_record(info, dst_dir):
