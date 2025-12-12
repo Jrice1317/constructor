@@ -201,8 +201,7 @@ def write_files(info: dict, workspace: str):
     write_initial_state_explicit_txt(info, join(workspace, "conda-meta"), final_urls_md5s)
 
     # base environment frozen marker files
-    if info.get("freeze_base"):
-        write_frozen(info["freeze_base"], join(workspace, "conda-meta"))
+    write_frozen(info.get("freeze_base"), join(workspace, "conda-meta"))
 
     for fn in files:
         os.chmod(join(workspace, fn), 0o664)
@@ -224,8 +223,7 @@ def write_files(info: dict, workspace: str):
         # shortcuts
         write_shortcuts_txt(info, env_pkgs, env_config)
         # frozen marker file
-        if env_config.get("freeze_env"):
-            write_frozen(env_config["freeze_env"], env_conda_meta)
+        write_frozen(env_config.get("freeze_env"), env_conda_meta)
 
 
 def write_conda_meta(info, dst_dir, final_urls_md5s, user_requested_specs=None):
@@ -253,10 +251,11 @@ def write_conda_meta(info, dst_dir, final_urls_md5s, user_requested_specs=None):
 
 
 def write_frozen(freeze_info, dst_dir):
-    if freeze_info and "conda" in freeze_info:
-        frozen_path = join(dst_dir, "frozen")
-        with open(frozen_path, "w") as ff:
-            json.dump(freeze_info, ff, indent=2, sort_keys=True)
+    if not freeze_info or "conda" not in freeze_info:
+        return
+    frozen_path = join(dst_dir, "frozen")
+    with open(frozen_path, "w") as ff:
+        json.dump(freeze_info["conda"], ff)
 
 
 def write_repodata_record(info, dst_dir):
