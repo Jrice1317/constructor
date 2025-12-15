@@ -1639,10 +1639,10 @@ Section "Install"
     File "{{ env.history_abspath }}"
 
     # Add frozen marker file if configured
-    IfFileExists "{{ env.frozen_abspath }}"
+    {%- if env.has_frozen %}
         SetOutPath "{{ env.conda_meta }}"
         File "{{ env.frozen_abspath }}"
-
+    {%- endif %}
 {%- endfor %}
 
 {%- for condarc in WRITE_CONDARC %}
