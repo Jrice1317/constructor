@@ -116,7 +116,7 @@ def setup_envs_commands(info, dir_path):
                 ),
                 "conda_meta": join("$INSTDIR", "envs", env_name, "conda-meta"),
                 "history_abspath": join(dir_path, "envs", env_name, "conda-meta", "history"),
-                "frozen_abspath": join(dir_path, "envs", env_name, "conda-meta", "frozen") if info.get("freeze_env", {}).get("conda") is not None else "",
+                "frozen_abspath": join(dir_path, "envs", env_name, "conda-meta", "frozen") if env_info.get("freeze_env", {}).get("conda") is not None else "",
                 "final_channels": get_final_channels(channel_info),
                 "shortcuts": shortcuts_flags(env_info),
                 "register_envs": str(info.get("register_envs", True)).lower(),
