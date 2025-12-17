@@ -1509,11 +1509,14 @@ def test_not_in_installed_menu_list_(tmp_path, request, no_registry):
         CONDA_EXE == StandaloneExe.CONDA
         and check_version(CONDA_EXE_VERSION, min_version="25.5.0", max_version="25.7.0")
     ),
-    reason="conda-standalone 25.5.x fails with protected environments and older versions ignore frozen files",
+    reason="conda-standalone 25.5.x fails with protected environments",
     strict=True,
 )
 def test_frozen_environment(tmp_path, request):
     input_path = _example_path("protected_base")
+    with open(input_path / "construct.yaml") as f:
+            frozen_config = YAML().load(f)
+
     for installer, install_dir in create_installer(input_path, tmp_path):
         _run_installer(
             input_path,
@@ -1524,8 +1527,15 @@ def test_frozen_environment(tmp_path, request):
         )
 
         expected_frozen_paths = {
-            install_dir / "conda-meta" / "frozen",
-            install_dir / "envs" / "default" / "conda-meta" / "frozen",
+            "freeze_base": install_dir / "conda-meta" / "frozen",
+            "freeze_env": install_dir / "envs" / "env1" / "conda-meta" / "frozen",
+            "extra_files": install_dir / "envs" / "env2" / "conda-meta" / "frozen",
+        }
+
+        expected_frozen_config = {
+            "freeze_base": frozen_config["freeze_base"]["conda"],
+            "freeze_env": frozen_config["extra_envs"]["env1"]["freeze_env"]["conda"],
+            "extra_files": json.load(open(input_path / "frozen.json")),
         }
 
         actual_frozen_paths = set()
@@ -1534,7 +1544,11 @@ def test_frozen_environment(tmp_path, request):
             assert frozen_file.exists()
             actual_frozen_paths.add(frozen_file)
 
-        assert expected_frozen_paths == actual_frozen_paths, (
-            f"Expected: {sorted(str(p) for p in expected_frozen_paths)}\n"
+        assert set(expected_frozen_paths.values()) == actual_frozen_paths, (
+            f"Expected: {sorted(str(p) for p in expected_frozen_paths.values())}\n"
             f"Found: {sorted(str(p) for p in actual_frozen_paths)}"
         )
+
+        for method, path in expected_frozen_paths.items():
+            actual_config = json.load(open(path))
+            assert actual_config == expected_frozen_config[method]
