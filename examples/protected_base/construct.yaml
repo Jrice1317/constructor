@@ -23,7 +23,7 @@ extra_envs:
       - conda
     freeze_env:
       conda:
-        message: "This environment is frozen."
+        "message": "This environment is frozen."
 
 extra_files:
   - frozen.json: conda-meta/frozen
