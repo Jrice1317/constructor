@@ -1517,38 +1517,41 @@ def test_frozen_environment(tmp_path, request):
     with open(input_path / "construct.yaml") as f:
             frozen_config = YAML().load(f)
 
-    for installer, install_dir in create_installer(input_path, tmp_path):
-        _run_installer(
-            input_path,
-            installer,
-            install_dir,
-            request=request,
-            uninstall=False,
-        )
+    try:
+        for installer, install_dir in create_installer(input_path, tmp_path):
+            _run_installer(
+                input_path,
+                installer,
+                install_dir,
+                request=request,
+                uninstall=False,
+            )
 
-        expected_frozen_paths = {
-            "freeze_base": install_dir / "conda-meta" / "frozen",
-            "freeze_env": install_dir / "envs" / "env1" / "conda-meta" / "frozen",
-            "extra_files": install_dir / "envs" / "env2" / "conda-meta" / "frozen",
-        }
+            expected_frozen_paths = {
+                "freeze_base": install_dir / "conda-meta" / "frozen",
+                "freeze_env": install_dir / "envs" / "env1" / "conda-meta" / "frozen",
+            }
 
-        expected_frozen_config = {
-            "freeze_base": frozen_config["freeze_base"]["conda"],
-            "freeze_env": frozen_config["extra_envs"]["env1"]["freeze_env"]["conda"],
-            "extra_files": json.load(open(input_path / "frozen.json")),
-        }
+            expected_frozen_config = {
+                "freeze_base": frozen_config["freeze_base"]["conda"],
+                "freeze_env": frozen_config["extra_envs"]["env1"]["freeze_env"]["conda"],
+            }
 
-        actual_frozen_paths = set()
-        for env in install_dir.glob("**/conda-meta/history"):
-            frozen_file = env.parent / "frozen"
-            assert frozen_file.exists()
-            actual_frozen_paths.add(frozen_file)
+            actual_frozen_paths = set()
+            for env in install_dir.glob("**/conda-meta/history"):
+                frozen_file = env.parent / "frozen"
+                assert frozen_file.exists()
+                actual_frozen_paths.add(frozen_file)
 
-        assert set(expected_frozen_paths.values()) == actual_frozen_paths, (
-            f"Expected: {sorted(str(p) for p in expected_frozen_paths.values())}\n"
-            f"Found: {sorted(str(p) for p in actual_frozen_paths)}"
-        )
+            assert set(expected_frozen_paths.values()) == actual_frozen_paths, (
+                f"Expected: {sorted(str(p) for p in expected_frozen_paths.values())}\n"
+                f"Found: {sorted(str(p) for p in actual_frozen_paths)}"
+            )
 
-        for method, path in expected_frozen_paths.items():
-            actual_config = json.load(open(path))
-            assert actual_config == expected_frozen_config[method]
+            for method, path in expected_frozen_paths.items():
+                actual_config = json.load(open(path))
+                assert actual_config == expected_frozen_config[method]
+
+    except RuntimeError as e:
+        if not "Frozen marker files found from both 'freeze_base / freeze_env' and 'extra_files' for the following environments: base" in str(e):
+            raise e

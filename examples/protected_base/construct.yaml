@@ -26,5 +26,4 @@ extra_envs:
         "message": "This environment is frozen."
 
 extra_files:
-  # - frozen.json: conda-meta/frozen   # Will raise RuntimeError for base env
-  - frozen.json: envs/env2/conda-meta/frozen
+  - frozen.json: conda-meta/frozen
