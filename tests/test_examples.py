@@ -20,6 +20,7 @@ from conda.base.context import context
 from conda.core.prefix_data import PrefixData
 from conda.models.version import VersionOrder as Version
 from ruamel.yaml import YAML
+from contextlib import nullcontext
 
 from constructor.utils import (
     StandaloneExe,
@@ -1512,41 +1513,60 @@ def test_not_in_installed_menu_list_(tmp_path, request, no_registry):
     reason="conda-standalone 25.5.x fails with protected environments",
     strict=True,
 )
-def test_frozen_environment(tmp_path, request):
-    input_path = _example_path("protected_base")
-    with open(input_path / "construct.yaml") as f:
+@pytest.mark.parametrize(
+    "has_conflict",
+    (
+        pytest.param(True, id="with-conflict"),
+        pytest.param(False, id="without-conflict"),
+    ),
+)
+def test_frozen_environment(tmp_path, request, has_conflict):
+    example_path = _example_path("protected_base")
+    input_path = tmp_path / "input"
+    shutil.copytree(str(example_path), str(input_path))
+    context = pytest.raises(RuntimeError) if has_conflict else nullcontext()
+
+    if not has_conflict:
+        with open(input_path / "construct.yaml") as f:
+            frozen_config = YAML().load(f)
+        frozen_config.pop("extra_files", None)
+        with open(input_path / "construct.yaml", "w") as f:
+            YAML().dump(frozen_config, f)
+
+    with context as c:
+        with open(input_path / "construct.yaml") as f:
             frozen_config = YAML().load(f)
 
-    for installer, install_dir in create_installer(input_path, tmp_path):
-        _run_installer(
-            input_path,
-            installer,
-            install_dir,
-            request=request,
-            uninstall=False,
-        )
+        for installer, install_dir in create_installer(input_path, tmp_path):
+            _run_installer(
+                input_path,
+                installer,
+                install_dir,
+                request=request,
+                uninstall=False,
+            )
 
-        expected_frozen_paths = {
-            "freeze_base": install_dir / "conda-meta" / "frozen",
-            "freeze_env": install_dir / "envs" / "env1" / "conda-meta" / "frozen",
-        }
+            expected_frozen_paths = {
+                "freeze_base": install_dir / "conda-meta" / "frozen",
+                "freeze_env": install_dir / "envs" / "env1" / "conda-meta" / "frozen",
+            }
 
-        expected_frozen_config = {
-            "freeze_base": frozen_config["freeze_base"]["conda"],
-            "freeze_env": frozen_config["extra_envs"]["env1"]["freeze_env"]["conda"],
-        }
+            expected_frozen_config = {
+                "freeze_base": frozen_config["freeze_base"]["conda"],
+                "freeze_env": frozen_config["extra_envs"]["env1"]["freeze_env"]["conda"],
+            }
 
-        actual_frozen_paths = set()
-        for env in install_dir.glob("**/conda-meta/history"):
-            frozen_file = env.parent / "frozen"
-            assert frozen_file.exists()
-            actual_frozen_paths.add(frozen_file)
+            actual_frozen_paths = set()
+            for env in install_dir.glob("**/conda-meta/history"):
+                frozen_file = env.parent / "frozen"
+                assert frozen_file.exists()
+                actual_frozen_paths.add(frozen_file)
 
-        assert set(expected_frozen_paths.values()) == actual_frozen_paths, (
-            f"Expected: {sorted(str(p) for p in expected_frozen_paths.values())}\n"
-            f"Found: {sorted(str(p) for p in actual_frozen_paths)}"
-        )
+            assert set(expected_frozen_paths.values()) == actual_frozen_paths
 
-        for method, path in expected_frozen_paths.items():
-            actual_config = json.load(open(path))
-            assert actual_config == expected_frozen_config[method]
+            for frozen_method, frozen_path in expected_frozen_paths.items():
+                actual_config = json.loads(frozen_path.read_text())
+                assert actual_config == expected_frozen_config[frozen_method]
+
+    if has_conflict:
+        assert all(s in str(c.value) for s in ("freeze_base / freeze_env", "extra_files"))
