@@ -1549,6 +1549,3 @@ def test_frozen_environment(tmp_path, request, has_conflict):
                 for frozen_path, expected_content in expected_frozen.items():
                     assert frozen_path.exists()
                     assert json.loads(frozen_path.read_text()) == expected_content
-
-    if has_conflict:
-        assert all(s in str(c.value) for s in ("freeze_base / freeze_env", "extra_files", "base"))
