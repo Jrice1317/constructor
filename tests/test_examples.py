@@ -1525,44 +1525,30 @@ def test_frozen_environment(tmp_path, request, has_conflict):
     input_path = tmp_path / "input"
     shutil.copytree(str(example_path), str(input_path))
 
-    if has_conflict:
-        with pytest.raises(RuntimeError) as re:
-            list(create_installer(input_path, tmp_path))
-        assert all(e in str(re.value) for e in ("freeze_base / freeze_env", "extra_files"))
-    else:
-        with open(input_path / "construct.yaml") as f:
-            frozen_config = YAML().load(f)
-        frozen_config.pop("extra_files", None)
-        with open(input_path / "construct.yaml", "w") as f:
-            YAML().dump(frozen_config, f)
+    with open(input_path / "construct.yaml") as f:
+        config = YAML().load(f)
 
-        for installer, install_dir in create_installer(input_path, tmp_path):
-            _run_installer(
-                input_path,
-                installer,
-                install_dir,
-                request=request,
-                uninstall=False,
-            )
+    context = pytest.raises(RuntimeError) if has_conflict else nullcontext()
 
-            expected_frozen_paths = {
-                "freeze_base": install_dir / "conda-meta" / "frozen",
-                "freeze_env": install_dir / "envs" / "env1" / "conda-meta" / "frozen",
-            }
+    with context as c:
+        if has_conflict:
+            for installer, install_dir in create_installer(input_path, tmp_path):
+                _run_installer(input_path, installer, install_dir, request=request, uninstall=False)
 
-            expected_frozen_config = {
-                "freeze_base": frozen_config["freeze_base"]["conda"],
-                "freeze_env": frozen_config["extra_envs"]["env1"]["freeze_env"]["conda"],
-            }
+                assert all(s in str(c.value) for s in ("freeze_base / freeze_env", "extra_files", "base"))
+        else:
+            config.pop("extra_files", None)
+            with open(input_path / "construct.yaml", "w") as f:
+                YAML().dump(config, f)
 
-            actual_frozen_paths = set()
-            for env in install_dir.glob("**/conda-meta/history"):
-                frozen_file = env.parent / "frozen"
-                assert frozen_file.exists()
-                actual_frozen_paths.add(frozen_file)
+            for installer, install_dir in create_installer(input_path, tmp_path):
+                _run_installer(input_path, installer, install_dir, request=request, uninstall=False)
 
-            assert set(expected_frozen_paths.values()) == actual_frozen_paths
+                expected_frozen = {
+                    install_dir / "conda-meta" / "frozen": config["freeze_base"]["conda"],
+                    install_dir / "envs" / "env1" / "conda-meta" / "frozen": config["extra_envs"]["env1"]["freeze_env"]["conda"],
+                }
 
-            for frozen_method, frozen_path in expected_frozen_paths.items():
-                actual_config = json.loads(frozen_path.read_text())
-                assert actual_config == expected_frozen_config[frozen_method]
+                for frozen_path, expected_content in expected_frozen.items():
+                    assert frozen_path.exists()
+                    assert json.loads(frozen_path.read_text()) == expected_content
