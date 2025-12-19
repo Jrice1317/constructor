@@ -1522,7 +1522,7 @@ def test_not_in_installed_menu_list_(tmp_path, request, no_registry):
 )
 def test_frozen_environment(tmp_path, request, has_conflict):
     example_path = _example_path("protected_base")
-    context = pytest.raises(RuntimeError) if has_conflict else nullcontext()
+    context = pytest.raises(subprocess.CalledProcessError) if has_conflict else nullcontext()
 
     with context as c:
         if has_conflict:
