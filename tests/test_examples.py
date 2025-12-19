@@ -1524,18 +1524,17 @@ def test_frozen_environment(tmp_path, request, has_conflict):
     example_path = _example_path("protected_base")
     input_path = tmp_path / "input"
     shutil.copytree(str(example_path), str(input_path))
-    context = pytest.raises(RuntimeError) if has_conflict else nullcontext()
 
-    if not has_conflict:
+    if has_conflict:
+        with pytest.raises(RuntimeError) as re:
+            list(create_installer(input_path, tmp_path))
+        assert all(e in str(re.value) for e in ("freeze_base / freeze_env", "extra_files"))
+    else:
         with open(input_path / "construct.yaml") as f:
             frozen_config = YAML().load(f)
         frozen_config.pop("extra_files", None)
         with open(input_path / "construct.yaml", "w") as f:
             YAML().dump(frozen_config, f)
-
-    with context as c:
-        with open(input_path / "construct.yaml") as f:
-            frozen_config = YAML().load(f)
 
         for installer, install_dir in create_installer(input_path, tmp_path):
             _run_installer(
@@ -1567,6 +1566,3 @@ def test_frozen_environment(tmp_path, request, has_conflict):
             for frozen_method, frozen_path in expected_frozen_paths.items():
                 actual_config = json.loads(frozen_path.read_text())
                 assert actual_config == expected_frozen_config[frozen_method]
-
-    if has_conflict:
-        assert all(s in str(c.value) for s in ("freeze_base / freeze_env", "extra_files"))
