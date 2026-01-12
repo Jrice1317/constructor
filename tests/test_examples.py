@@ -1528,13 +1528,14 @@ def test_frozen_environment(tmp_path, request, has_conflict):
 
     shutil.copytree(str(example_path), str(input_path))
 
+    yaml = YAML()
     with open(input_path / "construct.yaml") as f:
-        config = YAML().load(f)
+        config = yaml.load(f)
 
     if has_conflict:
         config.setdefault("extra_files", []).append({"frozen.json": "conda-meta/frozen"})
         with open(input_path / "construct.yaml", "w") as f:
-            YAML().dump(config, f)
+            yaml.dump(config, f)
 
     with context as c:
         for installer, install_dir in create_installer(input_path, tmp_path):
@@ -1546,7 +1547,7 @@ def test_frozen_environment(tmp_path, request, has_conflict):
             }
 
             for frozen_path, expected_content in expected_frozen.items():
-                assert frozen_path.exists()
+                assert frozen_path.is_file()
                 assert json.loads(frozen_path.read_text()) == expected_content
 
     if has_conflict:
